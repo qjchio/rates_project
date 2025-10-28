@@ -1,7 +1,7 @@
 import copy
 import datetime
 from datetime import date
-from typing import Dict, List
+from typing import Dict, List, Self
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -51,7 +51,7 @@ class YieldCurve:
         # self.df = df
         self.latest = latest
 
-    def get_tenors(self):
+    def get_tenors(self) -> List[int]:
         latest = self.latest
         tenors = [
             int(ten[:-1]) if ten.endswith("Y") else int(ten[:-1]) / 12
@@ -59,21 +59,20 @@ class YieldCurve:
         ]
         return tenors
 
-    def get_yields(self):
+    def get_yields(self) -> List[float]:
         latest = self.latest
-        yields = list(latest)
-        return yields
+        return list(latest)
 
-    def get_tenors_yields(self):
+    def get_tenors_yields(self) -> Dict[str, List[int | float]]:
         return {"tenors": self.get_tenors(), "yields": self.get_yields()}
 
-    def parallel_shift(self, shift_in_bps: float):
+    def parallel_shift(self, shift_in_bps: float) -> Self:
         new_curve = copy.deepcopy(self)
         new_curve.latest += shift_in_bps / 100
 
         return new_curve
 
-    def bump_curve(self, bumps: dict):
+    def bump_curve(self, bumps: dict) -> Self:
         new_curve = copy.deepcopy(self)
 
         latest_dct = new_curve.latest.to_dict()
@@ -90,7 +89,7 @@ class YieldCurve:
         new_curve.latest = pd.Series(latest_dct, name=name)
         return new_curve
 
-    def __str__(self):
+    def __str__(self) -> str:
         latest = self.latest
         date = latest.name
         # print("Latest yields:")
@@ -145,10 +144,10 @@ class Bond:
         # print(bond_disc, cashflows, discount_rates)
         return res
 
-    def get_total_value(self, yCurve: YieldCurve):
+    def get_total_value(self, yCurve: YieldCurve) -> float:
         return self.get_price(yCurve) * self.notional / self.face_value
 
-    def __str__(self):
+    def __str__(self) -> str:
         return (
             f"US Bond with maturity: {self.maturity} years, coupon rate: {self.coupon}"
         )
@@ -161,13 +160,13 @@ class Portfolio:
     def add_bonds(self, bond: Bond):
         self.bonds.append(bond)
 
-    def get_total_value(self, yCurve: YieldCurve):
+    def get_total_value(self, yCurve: YieldCurve) -> float:
         res = 0
         for b in self.bonds:
             res += b.get_total_value(yCurve)
         return res
 
-    def get_value_by_tenor(self, yCurve: YieldCurve, bucket: bool = False):
+    def get_value_by_tenor(self, yCurve: YieldCurve, bucket: bool = False) -> pd.Series:
         tenors = [b.maturity for b in self.bonds]
 
         if bucket:
@@ -199,7 +198,7 @@ def compare_curves(curves: Dict[str, YieldCurve]) -> None:
     plt.title("US Treasury Yield Curve")
     plt.ylabel("Yield (%)")
     plt.xlabel("Maturity")
-    plt.grid(True)
+    # plt.grid(True)
     plt.legend()
     plt.show()
     pass
